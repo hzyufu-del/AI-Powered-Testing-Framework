@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip list *)",
+      "Bash(\"D:/py/student/.venv/Scripts/pip.exe\" list *)"
+    ]
+  }
+}
