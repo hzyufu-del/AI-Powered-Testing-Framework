@@ -1,0 +1,13 @@
+# 浏览器自动化 | Browser Automation
+playwright>=1.40.0
+
+# 测试框架 | Testing Framework
+pytest>=8.0.0
+pytest-playwright>=0.4.0
+pytest-html>=4.0.0
+
+# HTTP 客户端 | HTTP Client
+requests>=2.31.0
+
+# 环境变量管理 | Environment Management
+python-dotenv>=1.0.0
