@@ -1,0 +1,45 @@
+{
+    "login_success": [
+        {
+            "case_name": "标准用户登录",
+            "username": "standard_user",
+            "password": "secret_sauce",
+            "expected_title": "Products"
+        },
+        {
+            "case_name": "视觉测试用户登录",
+            "username": "visual_user",
+            "password": "secret_sauce",
+            "expected_title": "Products"
+        }
+    ],
+    "login_failure": [
+        {
+            "case_name": "错误密码",
+            "username": "standard_user",
+            "password": "wrong_password",
+            "expected_error": "Epic sadface: Username and password do not match any user in this service"
+        },
+        {
+            "case_name": "空用户名",
+            "username": "",
+            "password": "secret_sauce",
+            "expected_error": "Epic sadface: Username is required"
+        },
+        {
+            "case_name": "空密码",
+            "username": "standard_user",
+            "password": "",
+            "expected_error": "Epic sadface: Password is required"
+        }
+    ],
+    "shopping_flow": [
+        {
+            "case_name": "添加背包到购物车",
+            "username": "standard_user",
+            "password": "secret_sauce",
+            "product_test_id": "sauce-labs-backpack",
+            "expected_cart_count": "1"
+        }
+    ]
+}

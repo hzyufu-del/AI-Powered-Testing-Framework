@@ -1,28 +1,44 @@
-import pytest  # 引入 Pytest 核心库
+import json
+import pytest
+from pathlib import Path
 from playwright.sync_api import expect
 from login_page import LoginPage
-import time
 
-# 🌟 这里就是我们的“弹夹”（测试数据池）
-# 我们准备了两个 Sauce Demo 官方提供的有效测试账号
-test_data = [
-    ("standard_user", "secret_sauce"),  # 第一组数据：标准用户
-    ("visual_user", "secret_sauce")  # 第二组数据：视觉测试用户
-]
+# 从 JSON 文件加载测试数据
+DATA_FILE = Path(__file__).parent / "data" / "test_data.json"
+with open(DATA_FILE, encoding="utf-8") as f:
+    _data = json.load(f)
+
+login_success_data = _data["login_success"]
+login_failure_data = _data["login_failure"]
 
 
-# 🌟 给测试用例戴上“魔法帽子”，告诉它：请从 test_data 里一行一行取数据，分别塞给 username 和 password
-@pytest.mark.parametrize("username, password", test_data)
-def test_data_driven_login(page, username, password):
+@pytest.mark.parametrize(
+    "username, password, expected_title",
+    [(d["username"], d["password"], d["expected_title"]) for d in login_success_data],
+    ids=[d["case_name"] for d in login_success_data],
+)
+def test_login_success(page, username, password, expected_title):
     print(f"\n--- 正在使用账号进行测试: {username} ---")
-
     login_page = LoginPage(page)
     login_page.navigate()
-
-    # 这里不再写死具体的账号，而是使用传进来的变量！
     login_page.login(username, password)
-
     print("开始断言检查...")
-    expect(login_page.title_element).to_have_text("Products")
+    expect(login_page.title_element).to_have_text(expected_title)
     print(f"✅ 账号 {username} 登录测试通过！")
 
+
+@pytest.mark.parametrize(
+    "username, password, expected_error",
+    [(d["username"], d["password"], d["expected_error"]) for d in login_failure_data],
+    ids=[d["case_name"] for d in login_failure_data],
+)
+def test_login_failure(page, username, password, expected_error):
+    print(f"\n--- 正在测试登录失败场景: {username or '(空)'} ---")
+    login_page = LoginPage(page)
+    login_page.navigate()
+    login_page.login(username, password)
+    error_element = page.locator('[data-test="error"]')
+    expect(error_element).to_be_visible()
+    expect(error_element).to_contain_text(expected_error)
+    print(f"✅ 登录失败场景验证通过！")
