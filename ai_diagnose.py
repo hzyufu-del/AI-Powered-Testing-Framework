@@ -36,7 +36,8 @@ PYTEST_ARGS = ["--tb=long", "-v"]
 
 # 大模型接口配置（从环境变量读取）
 API_BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "")
-API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+# API_KEY = os.environ.get("ANTHROPIC_API_KEY", "") # 先把原本的这行注释掉
+API_KEY = "sk-ant-api03-abcdefg-这是一个假的密钥-123456" # 临时写死一个错的
 
 # 诊断用的 system prompt
 SYSTEM_PROMPT = """你是一位资深的 Python 自动化测试工程师，精通 Playwright + Pytest 技术栈。
@@ -227,7 +228,11 @@ def main():
     print(f"[信息] 已提取错误日志（{len(error_log)} 字符）")
 
     # 调用大模型诊断
-    diagnosis = call_llm_diagnosis(error_log)
+    try:
+        diagnosis = call_llm_diagnosis(error_log)
+    except Exception:
+        print("\n⚠️ AI 诊断服务多次重试后依然不可用，可能是网络或凭据问题。已为您保留本地错误日志。")
+        sys.exit(0)
 
     # 输出报告（诊断失败时给出友好提示）
     if diagnosis:
