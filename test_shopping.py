@@ -1,4 +1,5 @@
 import json
+import re
 import pytest
 from pathlib import Path
 from playwright.sync_api import expect
@@ -72,7 +73,7 @@ def test_shopping_flow(
     # ========== 第五步：进入购物车页面 ==========
     print("5. 进入购物车页面...")
     products_page.go_to_cart()
-    expect(page).to_have_url("**/cart.html", timeout=5000)
+    expect(page).to_have_url(re.compile(r".*cart\.html"), timeout=5000)
 
     # ========== 第六步：断言验证 ==========
     print("6. 开始断言验证...")

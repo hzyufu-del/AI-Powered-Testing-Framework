@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import expect
 
 
@@ -49,7 +51,7 @@ class ProductsPage:
         """点击右上角购物车图标进入购物车页面。"""
         expect(self.cart_link).to_be_visible(timeout=5000)
         self.cart_link.click()
-        expect(self.page).to_have_url("**/cart.html")
+        expect(self.page).to_have_url(re.compile(r".*cart\.html"))
 
     def get_cart_item_count(self):
         """获取购物车角标数量。"""
