@@ -36,8 +36,8 @@ PYTEST_ARGS = ["--tb=long", "-v"]
 
 # 大模型接口配置（从环境变量读取）
 API_BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "")
-# API_KEY = os.environ.get("ANTHROPIC_API_KEY", "") # 先把原本的这行注释掉
-API_KEY = "sk-ant-api03-abcdefg-这是一个假的密钥-123456" # 临时写死一个错的
+API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
 
 # 诊断用的 system prompt
 SYSTEM_PROMPT = """你是一位资深的 Python 自动化测试工程师，精通 Playwright + Pytest 技术栈。
