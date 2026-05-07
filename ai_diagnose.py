@@ -21,6 +21,7 @@ import sys
 import subprocess
 import requests
 import json
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 
 # ──────────────────────────────────────────────
@@ -128,23 +129,38 @@ def run_pytest_and_capture() -> str:
     return output
 
 
-def call_llm_diagnosis(error_log: str) -> str:
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_fixed(2),
+    retry=retry_if_exception_type((requests.exceptions.ConnectionError, requests.exceptions.Timeout)),
+    reraise=True,
+)
+def _call_api(url: str, headers: dict, payload: dict) -> dict:
+    """调用大模型 API，遇到网络/超时错误自动重试（最多 3 次，间隔 2 秒）。"""
+    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def call_llm_diagnosis(error_log: str) -> str | None:
     """
     调用大模型接口进行错误诊断。
     使用 ANTHROPIC_BASE_URL 和 ANTHROPIC_API_KEY 环境变量。
     遵循 Anthropic Messages API 格式。
+
+    重试 3 次后仍失败则返回 None（优雅降级，不崩溃）。
     """
     if not API_BASE_URL:
         print("[错误] 环境变量 ANTHROPIC_BASE_URL 未设置，请配置大模型接口地址。")
-        sys.exit(1)
+        return None
     if not API_KEY:
         print("[错误] 环境变量 ANTHROPIC_API_KEY 未设置，请配置 API 密钥。")
-        sys.exit(1)
+        return None
 
     model = os.environ.get("ANTHROPIC_MODEL", "")
     if not model:
         print("[错误] 环境变量 ANTHROPIC_MODEL 未设置，请配置模型名称。")
-        sys.exit(1)
+        return None
 
     # 构造请求 —— Anthropic Messages API 格式
     url = f"{API_BASE_URL.rstrip('/')}/v1/messages"
@@ -166,26 +182,19 @@ def call_llm_diagnosis(error_log: str) -> str:
     print("[信息] 请稍候，模型分析中...\n")
 
     try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-
-        # 从 Anthropic 响应中提取模型回复
+        data = _call_api(url, headers, payload)
         diagnosis = data["content"][0]["text"]
         return diagnosis
 
-    except requests.exceptions.ConnectionError:
-        print(f"[错误] 无法连接到接口地址: {url}")
-        print("       请检查 ANTHROPIC_BASE_URL 是否正确，以及网络是否通畅。")
-        sys.exit(1)
-    except requests.exceptions.HTTPError:
-        print(f"[错误] 接口返回异常状态码: {resp.status_code}")
-        print(f"       响应内容: {resp.text[:500]}")
-        sys.exit(1)
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+        print(f"\n⚠️  AI 诊断服务暂时不可用（网络连接失败: {e}），已为您保留本地错误日志。")
+        return None
+    except requests.exceptions.HTTPError as e:
+        print(f"\n⚠️  AI 诊断服务暂时不可用（HTTP 错误: {e}），已为您保留本地错误日志。")
+        return None
     except (KeyError, IndexError):
-        print(f"[错误] 接口响应格式异常，无法解析模型输出。")
-        print(f"       原始响应: {json.dumps(data, ensure_ascii=False)[:500]}")
-        sys.exit(1)
+        print("\n⚠️  AI 诊断服务暂时不可用（响应格式异常），已为您保留本地错误日志。")
+        return None
 
 
 def print_report(diagnosis: str):
@@ -220,8 +229,11 @@ def main():
     # 调用大模型诊断
     diagnosis = call_llm_diagnosis(error_log)
 
-    # 输出报告
-    print_report(diagnosis)
+    # 输出报告（诊断失败时给出友好提示）
+    if diagnosis:
+        print_report(diagnosis)
+    else:
+        print("\n[信息] 错误日志已保存，可稍后重试或手动分析。")
 
 
 if __name__ == "__main__":

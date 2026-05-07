@@ -9,5 +9,8 @@ pytest-html>=4.0.0
 # HTTP 客户端 | HTTP Client
 requests>=2.31.0
 
+# 重试机制 | Retry Mechanism
+tenacity>=8.2.0
+
 # 环境变量管理 | Environment Management
 python-dotenv>=1.0.0
