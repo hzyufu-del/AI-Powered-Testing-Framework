@@ -35,11 +35,14 @@
     ],
     "shopping_flow": [
         {
-            "case_name": "添加背包到购物车",
+            "case_name": "搜索背包并加入购物车",
             "username": "standard_user",
             "password": "secret_sauce",
-            "product_test_id": "sauce-labs-backpack",
-            "expected_cart_count": "1"
+            "search_keyword": "backpack",
+            "expected_product_name": "Sauce Labs Backpack",
+            "unit_price": 29.99,
+            "quantity": 1,
+            "expected_total_price": 29.99
         }
     ]
 }
