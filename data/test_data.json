@@ -31,6 +31,12 @@
             "username": "standard_user",
             "password": "",
             "expected_error": "Epic sadface: Password is required"
+        },
+        {
+            "case_name": "用户名和密码都为空",
+            "username": "",
+            "password": "",
+            "expected_error": "Epic sadface: Username is required"
         }
     ],
     "shopping_flow": [

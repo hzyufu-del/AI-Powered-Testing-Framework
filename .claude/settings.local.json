@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(pip list *)",
-      "Bash(\"D:/py/student/.venv/Scripts/pip.exe\" list *)"
+      "Bash(\"D:/py/student/.venv/Scripts/pip.exe\" list *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\py\\\\student\\\\*.py\")",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(python -m pytest test_shopping.py test_login.py -v --headed)"
     ]
   }
 }
